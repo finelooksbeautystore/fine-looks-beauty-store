@@ -5,7 +5,7 @@ import { Listing, ListingSkeleton, parseListingParams } from "@/components/store
 import { PageHero } from "@/components/store/PageHero";
 import { JsonLd } from "@/components/store/JsonLd";
 import { getCategory } from "@/server/catalog";
-import { breadcrumbJsonLd } from "@/lib/seo";
+import { abs, breadcrumbJsonLd } from "@/lib/seo";
 
 export async function generateMetadata({ params, searchParams }: PageProps<"/[category]">): Promise<Metadata> {
   const { category } = await params;
@@ -46,6 +46,16 @@ export default async function CategoryPage({ params, searchParams }: PageProps<"
       <Suspense fallback={<ListingSkeleton />}>
         <CategoryListing slug={c.slug} searchParams={searchParams} />
       </Suspense>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: c.name,
+          url: abs(`/${c.slug}`),
+          ...(c.description ? { description: c.description } : {}),
+          isPartOf: { "@id": abs("/#website") },
+        }}
+      />
       <JsonLd
         data={breadcrumbJsonLd([
           { name: "Home", path: "/" },

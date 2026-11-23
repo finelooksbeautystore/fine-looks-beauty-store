@@ -26,6 +26,7 @@ export const RESERVED_SLUGS = new Set([
   "brand",
   "sitemap.xml",
   "robots.txt",
+  "llms.txt",
   "manifest.webmanifest",
   "icon.png",
   "apple-icon.png",

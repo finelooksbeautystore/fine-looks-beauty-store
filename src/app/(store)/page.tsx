@@ -23,7 +23,7 @@ import { STORE_PHOTOS } from "@/lib/store-photos";
 import { catalogStats, listCategories, searchProducts } from "@/server/catalog";
 import { DEFAULT_HOME, DEFAULT_STORE, getSettings, type HomeContent, type StoreInfo } from "@/server/settings";
 import { JsonLd } from "@/components/store/JsonLd";
-import { localBusinessJsonLd } from "@/lib/seo";
+import { localBusinessJsonLd, websiteJsonLd } from "@/lib/seo";
 import { storeMap } from "@/lib/maps";
 import { socialLinksAll } from "@/lib/social";
 import { SocialIcon } from "@/components/store/SocialLinks";
@@ -630,6 +630,7 @@ async function VisitBandData() {
         </div>
       </div>
       <JsonLd data={localBusinessJsonLd(store)} />
+      <JsonLd data={websiteJsonLd(store)} />
     </section>
   );
 }

@@ -4,7 +4,7 @@ import { MapPin, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { getProduct, relatedProducts } from "@/server/catalog";
 import { getSettings } from "@/server/settings";
 import { productHref } from "@/lib/urls";
-import { abs, breadcrumbJsonLd } from "@/lib/seo";
+import { abs, breadcrumbJsonLd, returnPolicyJsonLd } from "@/lib/seo";
 import { Breadcrumbs } from "./PageHero";
 import { JsonLd } from "./JsonLd";
 import { ProductCard } from "./ProductCard";
@@ -57,6 +57,7 @@ export async function ProductView({ slug, urlCategory }: { slug: string; urlCate
             availability: variants[0].available > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             itemCondition: "https://schema.org/NewCondition",
             seller: { "@type": "Organization", name: store.name },
+            hasMerchantReturnPolicy: returnPolicyJsonLd(commerce),
           }
         : {
             "@type": "AggregateOffer",
@@ -66,6 +67,7 @@ export async function ProductView({ slug, urlCategory }: { slug: string; urlCate
             highPrice: (Math.max(...prices) / 100).toFixed(2),
             offerCount: variants.length,
             availability: anyAvailable ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            hasMerchantReturnPolicy: returnPolicyJsonLd(commerce),
           },
   };
 

@@ -8,12 +8,28 @@ export default function robots(): MetadataRoute.Robots {
   if (STAGING_HOST.test(new URL(SITE_URL).hostname)) {
     return { rules: [{ userAgent: "*", disallow: "/" }] };
   }
+  const disallow = ["/admin", "/api/", "/cart", "/checkout", "/account", "/orders/", "/track", "/shop?q=", "/*?*q="];
   return {
     rules: [
+      { userAgent: "*", allow: "/", disallow },
+      // AI search and answer engines (GEO): explicitly welcome so the store can be cited in AI answers.
       {
-        userAgent: "*",
+        userAgent: [
+          "GPTBot",
+          "OAI-SearchBot",
+          "ChatGPT-User",
+          "ClaudeBot",
+          "Claude-SearchBot",
+          "Claude-User",
+          "PerplexityBot",
+          "Perplexity-User",
+          "Google-Extended",
+          "Applebot-Extended",
+          "Bingbot",
+          "CCBot",
+        ],
         allow: "/",
-        disallow: ["/admin", "/api/", "/cart", "/checkout", "/account", "/orders/", "/track", "/shop?q=", "/*?*q="],
+        disallow,
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

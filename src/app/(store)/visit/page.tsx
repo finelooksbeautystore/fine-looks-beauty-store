@@ -8,7 +8,7 @@ import { storeMap } from "@/lib/maps";
 import { HoursTable, OpenNow } from "@/components/store/StoreHours";
 import { StoreGallery } from "@/components/store/StoreGallery";
 import { STORE_PHOTOS } from "@/lib/store-photos";
-import { localBusinessJsonLd, organizationJsonLd } from "@/lib/seo";
+import { faqJsonLd, localBusinessJsonLd, organizationJsonLd, visitFaqs } from "@/lib/seo";
 import { socialLinks } from "@/lib/social";
 import { SocialIcon, SocialLinks } from "@/components/store/SocialLinks";
 
@@ -37,8 +37,9 @@ export default function VisitPage() {
 }
 
 async function Content() {
-  const { store } = await getSettings(["store"]);
+  const { store, commerce } = await getSettings(["store", "commerce"]);
   const map = storeMap(store);
+  const faqs = visitFaqs(store, commerce);
   const tel = store.phone.replace(/\D/g, "");
   return (
     <div className="container-x grid gap-8 pb-24 lg:grid-cols-[1fr_1.2fr]">
@@ -113,8 +114,23 @@ async function Content() {
         </h2>
         <StoreGallery photos={STORE_PHOTOS} />
       </section>
+      <section aria-labelledby="visit-faq-heading" className="lg:col-span-2">
+        <p className="eyebrow mb-2">Quick answers</p>
+        <h2 id="visit-faq-heading" className="mb-6 font-display text-3xl font-light sm:text-4xl">
+          Visiting <em className="accent">{store.name}.</em>
+        </h2>
+        <dl className="divide-y divide-line border-y border-line">
+          {faqs.map((f) => (
+            <div key={f.q} className="py-5">
+              <dt className="font-display text-xl">{f.q}</dt>
+              <dd className="mt-2 max-w-3xl leading-relaxed text-ink-soft">{f.a}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
       <JsonLd data={localBusinessJsonLd(store)} />
       <JsonLd data={organizationJsonLd(store)} />
+      <JsonLd data={faqJsonLd(faqs)} />
     </div>
   );
 }
