@@ -43,3 +43,5 @@ next-env.d.ts
 
 # local uploads (production uses S3 storage)
 /storage
+
+dump.rdb
