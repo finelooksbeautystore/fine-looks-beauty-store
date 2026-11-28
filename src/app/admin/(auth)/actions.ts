@@ -12,6 +12,7 @@ import {
   getStaffSession,
   requestMeta,
   rotateStaffSession,
+  staffMfaRequired,
 } from "@/server/auth/session";
 import { burnPasswordCheck, checkPasswordPolicy, hashPassword, verifyPassword } from "@/server/auth/password";
 import { generateRecoveryCodes, verifyTotp, verifyUserTotp } from "@/server/auth/mfa";
@@ -61,6 +62,13 @@ export async function staffLogin(_: AuthState, form: FormData): Promise<AuthStat
     return { ok: false, message: "Email or password is incorrect." };
   }
   await db().update(users).set({ failedLogins: 0, lockedUntil: null }).where(eq(users.id, user.id));
+  if (!staffMfaRequired()) {
+    await createStaffSession(user.id, true);
+    await db().update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
+    await audit({ userId: user.id, label: user.email, ip }, "staff.login", "user", user.id);
+    await recordDevice(user);
+    redirect("/admin");
+  }
   await createStaffSession(user.id, false);
   redirect(user.mfaEnabled ? "/admin/mfa" : "/admin/mfa/setup");
 }
@@ -160,6 +168,10 @@ export async function createFirstOwner(_: AuthState, form: FormData): Promise<Au
     .values({ email: parsed.data.email, name: parsed.data.name, role: "owner", passwordHash: await hashPassword(parsed.data.password) })
     .returning();
   await audit({ userId: u.id, label: u.email }, "staff.owner_created", "user", u.id);
+  if (!staffMfaRequired()) {
+    await createStaffSession(u.id, true);
+    redirect("/admin");
+  }
   await createStaffSession(u.id, false);
   redirect("/admin/mfa/setup");
 }
@@ -194,6 +206,10 @@ export async function acceptInvite(_: AuthState, form: FormData): Promise<AuthSt
       .where(eq(users.id, user.id));
   });
   await audit({ userId: user.id, label: user.email }, row.purpose === "invite" ? "staff.invite_accepted" : "staff.password_reset", "user", user.id);
+  if (!staffMfaRequired()) {
+    await createStaffSession(user.id, true);
+    redirect("/admin");
+  }
   await createStaffSession(user.id, false);
   redirect(user.mfaEnabled ? "/admin/mfa" : "/admin/mfa/setup");
 }

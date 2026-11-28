@@ -1,4 +1,5 @@
 import { cookies, headers } from "next/headers";
+import { env } from "@/server/env";
 import { redirect } from "next/navigation";
 import { and, eq } from "drizzle-orm";
 import { db } from "../db";
@@ -93,6 +94,11 @@ export async function getStaffSession(): Promise<StaffContext | null> {
   return { ...row, actor: { userId: row.user.id, label: row.user.email, ip } };
 }
 
+/** Whether admins must also enter an authenticator code (STAFF_MFA=required). */
+export function staffMfaRequired() {
+  return env().STAFF_MFA === "required";
+}
+
 /**
  * Gate for every admin page and action. Unauthenticated → login;
  * MFA not enrolled → setup; MFA not passed this session → verify.
@@ -100,8 +106,10 @@ export async function getStaffSession(): Promise<StaffContext | null> {
 export async function requireStaff(permission?: Permission): Promise<StaffContext> {
   const ctx = await getStaffSession();
   if (!ctx) redirect("/admin/login");
-  if (!ctx.user.mfaEnabled) redirect("/admin/mfa/setup");
-  if (!ctx.session.mfaVerified) redirect("/admin/mfa");
+  if (staffMfaRequired()) {
+    if (!ctx.user.mfaEnabled) redirect("/admin/mfa/setup");
+    if (!ctx.session.mfaVerified) redirect("/admin/mfa");
+  }
   if (permission && !can(ctx.user.role as Role, permission)) redirect("/admin?denied=" + permission);
   return ctx;
 }

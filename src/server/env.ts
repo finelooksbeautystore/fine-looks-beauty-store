@@ -38,6 +38,8 @@ const schema = z.object({
   ALERT_EMAIL: z.string().optional(),
   /** One-time token that allows creating the first owner account at /admin/setup. */
   SETUP_TOKEN: z.string().min(24).optional(),
+  /** Admin two-step sign-in (authenticator app). "off" (default): email + password only. "required": also ask for a code. */
+  STAFF_MFA: z.enum(["off", "required"]).default("off"),
 });
 
 export type Env = z.infer<typeof schema>;
